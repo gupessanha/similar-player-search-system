@@ -14,7 +14,7 @@ Identificar jogadores similares é problema central no recrutamento esportivo:
 - Comparar perfis táticos entre ligas e contextos.
 - Apoiar decisões de scouting com critérios objetivos.
 
-**Desafio metodológico:** a similaridade entre jogadores não possui um *ground truth* objetivo. Métodos diferentes (distâncias, conjuntos de features) produzem recomendações diferentes, sem critério claro para arbitrar entre elas.
+**Desafio metodológico:** a similaridade entre jogadores não possui um _ground truth_ objetivo. Métodos diferentes (distâncias, conjuntos de features) produzem recomendações diferentes, sem critério claro para arbitrar entre elas.
 
 **Limitação adicional:** dados individualizados de jogadores reais (eventos espaço-temporais, métricas avançadas por jogador) são de difícil acesso público, restritos a temporadas e ligas específicas.
 
@@ -58,4 +58,4 @@ uv sync
 uv run python data/get_data.py
 ```
 
-O script baixa o *Football Manager 2023 Dataset* via `kagglehub` e copia os arquivos para `data/`.
+O script baixa o _Football Manager 2023 Dataset_ via `kagglehub` e copia os arquivos para `data/`.
