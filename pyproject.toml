@@ -6,5 +6,13 @@ readme = "README.md"
 requires-python = ">=3.14.3"
 dependencies = [
     "kagglehub>=1.0.1",
+    "matplotlib>=3.10.9",
     "pandas>=3.0.3",
+    "seaborn>=0.13.2",
+]
+
+[dependency-groups]
+dev = [
+    "nbclient>=0.10.4",
+    "nbformat>=5.10.4",
 ]
