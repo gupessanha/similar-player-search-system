@@ -100,17 +100,24 @@ A combinação ideal é **alta em A e em B**: captura tanto a função tática q
 ├── data/
 │   ├── get_data.py          # baixa o dataset do Kaggle e copia para data/
 │   ├── merged_players.csv   # bruto, gerado pelo script (não versionado)
-│   └── processed/           # artefatos gerados pelo notebook 2 (não versionados)
+│   └── processed/           # artefatos gerados pelo notebook 2 / pipeline (não versionados)
 │       ├── outfield_z.csv     # 78.283 × 36 — z-score por posição (entrada da modelagem)
 │       ├── outfield_raw.csv   # mesmos jogadores na escala 1–20
 │       ├── gk_raw.csv         # goleiros preservados (estudo separado)
 │       ├── feature_sets.json  # definição dos conjuntos T/M/F/SP
-│       └── zscore_stats.csv   # μ, σ por (role × atributo) — 216 linhas, formato long
+│       ├── zscore_stats.csv   # μ, σ por (role × atributo) — 216 linhas, formato long
+│       └── neighbors.csv      # top-10 vizinhos de cada jogador por aspecto × métrica (gerado na Seção 6)
 ├── notebooks/
 │   ├── 1_EDA.ipynb          # análise exploratória: higiene, famílias, perfis por posição
-│   └── 2_features.ipynb     # filtragem de GK, conjuntos de features, z-score por posição
-├── src/                     # pipeline de pré-processamento (planejado)
-├── tests/                   # (planejado)
+│   ├── 2_features.ipynb     # filtragem de GK, conjuntos de features, z-score por posição
+│   └── 3_modelagem.ipynb    # 9 condições, Avaliações A/B, convergência, SP; Seção 6 (seleção nomeada)
+├── src/spss/                # pacote reproduzível (instalado por `uv sync`)
+│   ├── preprocessing.py     # higiene: drop/dedup por UID, primary_role, split GK
+│   ├── features.py          # conjuntos T/M/F/SP e z-score por posição (ddof=0)
+│   ├── distances.py         # primitivas Euclidiana/Cosseno/Pearson (fonte canônica)
+│   ├── retrieval.py         # Retriever: similar(), show_grid(), export_neighbors()
+│   └── pipeline.py          # CSV bruto -> os 5 artefatos (python -m spss.pipeline)
+├── tests/                   # pytest: roles, features, distâncias, recuperação
 ├── pyproject.toml
 └── uv.lock
 ```
@@ -123,7 +130,9 @@ Os artefatos em `data/processed/` são derivados reproduzíveis a partir do CSV 
 
 - [x] **Notebook 1 — EDA.** Higiene dos dados, categorização das 86 colunas, capacidade discriminante das posições.
 - [x] **Notebook 2 — Features.** Segregação de goleiros, definição dos conjuntos T/M/F/SP, z-score por posição, persistência dos artefatos.
-- [ ] **Notebook 3 — Modelagem.** Implementação das 3 distâncias e das Avaliações A e B sobre as 9 condições; análise complementar de `SP`.
+- [x] **Notebook 3 — Modelagem.** Implementação das 3 distâncias e das Avaliações A e B sobre as 9 condições; análise complementar de `SP`; **Seção 6** — seleção de jogadores similares **nomeada** por aspecto × métrica (`Retriever`) e export completo (`neighbors.csv`).
+- [x] **Pacote `src/spss`.** Pipeline de pré-processamento reproduzível (`python -m spss.pipeline`) e API de recuperação (`spss.retrieval.Retriever`).
+- [x] **`tests/`.** Testes de roles, features (z-score), distâncias e recuperação (`uv run pytest`).
 
 ---
 
@@ -132,14 +141,20 @@ Os artefatos em `data/processed/` são derivados reproduzíveis a partir do CSV 
 Requer Python 3.14 e [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# 1. instalar dependências
+# 1. instalar dependências + o pacote `spss` (editável)
 uv sync
 
 # 2. baixar o dataset (gera data/merged_players (1).csv)
 uv run python data/get_data.py
 
-# 3. abrir os notebooks (ordem: 1 -> 2)
+# 3a. regenerar os artefatos de data/processed/ (equivale aos notebooks 1+2)
+uv run python -m spss.pipeline
+
+# 3b. ou abrir os notebooks (ordem: 1 -> 2 -> 3)
 uv run jupyter lab notebooks/
+
+# 4. rodar os testes
+uv run pytest
 ```
 
-O script baixa o _Football Manager 2023 Dataset_ via `kagglehub` e copia os arquivos para `data/`. Rodar o notebook 2 de ponta a ponta regenera os artefatos em `data/processed/`.
+O script baixa o _Football Manager 2023 Dataset_ via `kagglehub` e copia os arquivos para `data/`. Como o `pyproject.toml` declara um `build-system`, `uv sync` também instala o pacote `spss` no ambiente (o mesmo venv usado pelo kernel Jupyter, então `import spss` funciona nos notebooks). Rodar `python -m spss.pipeline` (ou o notebook 2 de ponta a ponta) regenera os artefatos em `data/processed/`; a **Seção 6** do notebook 3 gera adicionalmente `neighbors.csv` — a seleção dos jogadores mais próximos de cada jogador em cada aspecto × métrica.
